@@ -1,6 +1,8 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
-
-# Generated UI test results
+.pytest_cache/
 reports/
-artifacts/
+archive/
+pytest_screenshots/
+output.json
+pytest_html_report.html

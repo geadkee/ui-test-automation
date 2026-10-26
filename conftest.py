@@ -1,9 +1,20 @@
 from pathlib import Path
 from uuid import uuid4
 import warnings
-
 import pytest
 import pytest_html
+import os
+
+def pytest_addoption(parser):
+    parser.addoption("--PASSWORD", action="store", default=None, help="Test login password; overrides TEST_PASSWORD.")
+
+
+@pytest.fixture(scope="session")
+def password(pytestconfig):
+    value = pytestconfig.getoption("PASSWORD") or os.getenv("TEST_PASSWORD")
+    if not value:
+        raise pytest.UsageError("Pass --PASSWORD=... or set TEST_PASSWORD before running authenticated tests.")
+    return value
 
 
 def pytest_html_report_title(report):
@@ -34,62 +45,3 @@ def pytest_runtest_makereport(item, call):
     extras = list(getattr(report, "extras", []))
     extras.append(pytest_html.extras.png(relative_path.as_posix(), name="Failure screenshot"))
     report.extras = extras
-
-
-# import os
-# from pathlib import Path
-# import runpy
-
-# import pytest
-# def pytest_addoption(parser):
-#     group = parser.getgroup("ui-tests")
-#     group.addoption(
-#         "--variables", default="config.py", metavar="PATH",
-#         help="Python configuration file defining get_app_config().",
-#     )
-#     group.addoption(
-#         "--password", default=None,
-#         help="Login password; defaults to TEST_PASSWORD from the environment.",
-#     )
-
-
-# @pytest.fixture(scope="session")
-# def variables(pytestconfig):
-#     path = Path(pytestconfig.getoption("variables"))
-#     if not path.is_absolute():
-#         path = pytestconfig.rootpath / path
-#     if not path.is_file():
-#         raise pytest.UsageError(f"Configuration file does not exist: {path}")
-#     namespace = runpy.run_path(str(path))
-#     get_config = namespace.get("get_app_config")
-#     if not callable(get_config):
-#         raise pytest.UsageError(f"{path} must define get_app_config().")
-#     config = get_config()
-#     if not isinstance(config, dict) or not config.get("base_url"):
-#         raise pytest.UsageError("get_app_config() must return a dict with base_url.")
-#     return config
-
-
-# @pytest.fixture(scope="session")
-# def password(pytestconfig):
-#     value = pytestconfig.getoption("password") or os.getenv("TEST_PASSWORD")
-#     if not value:
-#         raise pytest.UsageError("Pass --password or set TEST_PASSWORD before running login tests.")
-#     return value
-
-
-# @pytest.fixture(scope="session")
-# def app_config(variables):
-#     return variables
-
-
-# @pytest.fixture(scope="session")
-# def valid_user(password):
-#     username = os.getenv("TEST_USERNAME")
-#     if not username:
-#         raise pytest.UsageError(
-#             "Set TEST_USERNAME before running authenticated tests."
-#         )
-#     return {"username": username, "password": password}
-
-
