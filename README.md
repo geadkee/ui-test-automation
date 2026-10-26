@@ -9,7 +9,9 @@ Requires an installed Python 3.11+. From the repository root, create
 and activate a virtual environment to keep project dependencies separate from
 your global Python installation:
 
-```powershell
+```
+git clone <this_repo>
+
 python -m pip install -r requirements.txt
 python -m playwright install chromium
 ```
